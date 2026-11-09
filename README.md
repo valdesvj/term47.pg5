@@ -100,16 +100,36 @@ fonts (public domain), with the VT100 line-drawing characters and Latin-1.
 | SHELL | `ls -la` | `cd ` | `cat ` | `less ` | `clear` |
 | SYS | `top` | `df -h` | `free -h` | `uptime` | `w` |
 | NET | `ping -c 4 ` | `ssh ` | `lynx ` | `w3m ` | `ip -br a` |
+| GIT | `git status -sb` | `git log --oneline -15` | `git diff` | `git add -A` | `git commit -m ""` (cursor in the quotes) |
+| BUILD | `make` | `make test` | `grep -rn "" .` | `find . -name ""` | `vi ` |
+| DEBUG | `dmesg \| tail -20` | `journalctl -n 30` | `gdb -q ` | `strace -f ` | `tail -f ` |
+| PROC | `ps aux --sort=-%cpu \| head` | `pgrep -a ` | `kill ` | `jobs -l` | `ss -tulpn` |
+| FILES | `ls -lt \| head` | `file ` | `hexdump -C ` | `chmod +x ` | `wc -l ` |
 | CTRL | ^C | ^D | ^Z | Tab | CTRL (the next key as a control key) |
 | EDIT | ← | → | Page Up | Page Down | ^R |
 | SYM | `/` | `|` | `~` | `>` | `$` |
 | SYM2 | `=` | `"` | `:` | `(` | `[` |
 | TERM | **SET** | **INFO** | **RESET** | **LINK** | **MIRROR** |
 
-A command that ends without Enter (`cd `, `cat `, `ssh ` …) waits for you to type the rest. With SHIFT, some keys
-give a second command (`ls -lah`, `cd ~`, `who`, `ip r`, Home, End, `\`, `&`, `*`, `<`, `'` …).
+A command that ends without Enter (`cd `, `cat `, `ssh ` …) waits for you to type the rest. **SHIFT** and a soft key
+gives its second command:
 
-The rows are in **`/TERM47/MENU.TXT`** on the calculator's disk. TERM47 writes it the first time; change it to your
+| Row | SHIFT F1 | SHIFT F2 | SHIFT F3 | SHIFT F4 | SHIFT F5 |
+|---|---|---|---|---|---|
+| SHELL | `ls -lah` | `cd ~` | | | `sudo !!` |
+| SYS | `htop` | `du -sh * \| sort -h` | `vmstat 1 5` | `uname -a` | `who` |
+| NET | | | | | `ip r` |
+| GIT | `git branch -a` | `git pull` | `git diff --stat` | `git stash` | `git push` |
+| BUILD | `make clean` | `make -j4` | `grep -rni "" .` | `which ` | `nano ` |
+| DEBUG | `sudo dmesg -w` | `journalctl -f` | `bt` (in gdb) | `ltrace ` | `echo $?` |
+| PROC | `ps -ef --forest` | `pidof ` | `kill -9 ` | `bg` | `lsof -i` |
+| FILES | `tree -L 2` | `stat ` | `strings ` | `sudo chown ` | `diff -u ` |
+
+On CTRL, SHIFT ^Z gives `fg`; on EDIT, SHIFT ← → give Home and End; on SYM and SYM2, SHIFT gives `\ & * < '` and
+`# ; @ ) ]`.
+
+The rows are in **`/TERM47/MENU.TXT`** on the calculator's disk. TERM47 writes it the first time (and
+replaces TERM47 0.1's file, keeping it as `MENU.BAK`); change it to your
 own commands (the comments at the top of the file explain the format: `label|text|SHIFT label|SHIFT text`, `\r`
 for Enter, `^C` for control keys, `{UP}` `{LEFT}` … for the cursor keys). The TERM row is built in.
 

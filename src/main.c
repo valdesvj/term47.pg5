@@ -67,7 +67,7 @@ static const Font *FONT(void) { return &FONTS[SZ()->font]; }
 /* ------------------------------------------------------------------ */
 /*  Menus: /TERM47/MENU.TXT                                           */
 /* ------------------------------------------------------------------ */
-#define MAXPAGES 12
+#define MAXPAGES 16
 #define TXT 40
 #define MK  0xff                         /* a key code follows: VK_*, or K_CTRL */
 #define K_CTRL 0x40
@@ -77,7 +77,7 @@ static Page *pages;
 static int npages, page;                 /* npages: the file's pages; one more, TERM, built in */
 
 static const char DEFAULT_MENU[] =
-  "# TERM47 soft keys: [PAGE] then up to 5 keys a page, F1..F5 (F6 is >>; SHIFT F6 <<)\n"
+  "# TERM47 menu v2. Soft keys: [PAGE] then up to 5 keys a page, F1..F5 (F6 is >>; SHIFT F6 <<)\n"
   "#   label|text            the text is typed when the key is pressed\n"
   "#   label|text|SLABEL|stext   SHIFT and the key: the second one\n"
   "# In the text: \\r Enter, \\t Tab, \\e Esc, \\\\ \\, \\| |, \\xHH a byte, ^C a control key (\\^ is ^),\n"
@@ -89,12 +89,12 @@ static const char DEFAULT_MENU[] =
   "cd|cd |cd ~|cd ~\\r\n"
   "cat|cat \n"
   "less|less \n"
-  "clear|clear\\r\n"
+  "clear|clear\\r|sudo!!|sudo !!\\r\n"
   "[SYS]\n"
-  "top|top\\r\n"
-  "df|df -h\\r\n"
-  "free|free -h\\r\n"
-  "uptime|uptime\\r\n"
+  "top|top\\r|htop|htop\\r\n"
+  "df|df -h\\r|du|du -sh * \\| sort -h\\r\n"
+  "free|free -h\\r|vmstat|vmstat 1 5\\r\n"
+  "uptime|uptime\\r|uname|uname -a\\r\n"
   "w|w\\r|who|who\\r\n"
   "[NET]\n"
   "ping|ping -c 4 \n"
@@ -102,6 +102,36 @@ static const char DEFAULT_MENU[] =
   "lynx|lynx \n"
   "w3m|w3m \n"
   "ip a|ip -br a\\r|ip r|ip r\\r\n"
+  "[GIT]\n"
+  "status|git status -sb\\r|branch|git branch -a\\r\n"
+  "log|git log --oneline -15\\r|pull|git pull\\r\n"
+  "diff|git diff\\r|stat|git diff --stat\\r\n"
+  "add|git add -A\\r|stash|git stash\\r\n"
+  "commit|git commit -m \"\"{LEFT}|push|git push\\r\n"
+  "[BUILD]\n"
+  "make|make\\r|clean|make clean\\r\n"
+  "test|make test\\r|-j4|make -j4\\r\n"
+  "grep|grep -rn \"\" .{LEFT}{LEFT}{LEFT}|grep-i|grep -rni \"\" .{LEFT}{LEFT}{LEFT}\n"
+  "find|find . -name \"\"{LEFT}|which|which \n"
+  "vi|vi |nano|nano \n"
+  "[DEBUG]\n"
+  "dmesg|dmesg \\| tail -20\\r|dmsg-w|sudo dmesg -w\\r\n"
+  "jrnl|journalctl -n 30 --no-pager\\r|jrnl-f|journalctl -f\\r\n"
+  "gdb|gdb -q |bt|bt\\r\n"
+  "strace|strace -f |ltrace|ltrace \n"
+  "tail|tail -f |echo$?|echo $?\\r\n"
+  "[PROC]\n"
+  "ps|ps aux --sort=-%cpu \\| head\\r|tree|ps -ef --forest\\r\n"
+  "pgrep|pgrep -a |pidof|pidof \n"
+  "kill|kill |kill-9|kill -9 \n"
+  "jobs|jobs -l\\r|bg|bg\\r\n"
+  "ports|ss -tulpn\\r|lsof|lsof -i\\r\n"
+  "[FILES]\n"
+  "lt|ls -lt \\| head\\r|tree|tree -L 2\\r\n"
+  "file|file |stat|stat \n"
+  "hex|hexdump -C |strs|strings \n"
+  "chmod|chmod +x |chown|sudo chown \n"
+  "wc|wc -l |diff|diff -u \n"
   "[CTRL]\n"
   "^C|^C\n"
   "^D|^D\n"
@@ -257,10 +287,18 @@ static void load_cfg(void) {
   }
 }
 
+static void message(const char *s);
+
 static void load_menu(void) {
-  char *buf = malloc(4096);
+  char *buf = malloc(8192);
   int ok = 0;
-  if (buf && read_file(MENU_FILE, buf, 4096) > 0) {
+  if (buf && read_file(MENU_FILE, buf, 8192) > 0) {
+    if (!strncmp(buf, "# TERM47 soft keys:", 19) && sys_disk_ok()) {   /* TERM47 0.1's file: the new commands */
+      write_file(DIR "/MENU.BAK", buf);                                   /* yours kept, if you had changed it */
+      write_file(MENU_FILE, DEFAULT_MENU);
+      strcpy(buf, DEFAULT_MENU);
+      message("New commands: old MENU.TXT in MENU.BAK");
+    }
     char *w = buf;                                        /* a file saved on Windows: its CR characters out */
     for (char *r = buf; *r; r++) if (*r != '\r') *w++ = *r;
     *w = 0;
@@ -334,6 +372,7 @@ static void draw_row(int r) {
 }
 
 static void set_tag(const char *s, uint32_t ms) {
+  if (tag[0] && vt) for (int r = 0; r < tag_rows && r < vt->rows; r++) vt->dirty[r] = 1;   /* the old box goes */
   snprintf(tag, sizeof tag, "%.47s", s);
   tag_until = now_ms() + ms;
 }

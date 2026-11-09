@@ -1,0 +1,5 @@
+build/
+.dep/
+*.o
+simdisk/
+__pycache__/

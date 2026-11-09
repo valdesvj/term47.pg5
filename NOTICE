@@ -1,0 +1,19 @@
+TERM47 - a VT102 text terminal for the SwissMicros DM42n
+Copyright (C) 2026 Victor Valdes <valdes.vj@gmail.com>
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version. See LICENSE.
+
+Exceptions and third-party material:
+  - dmcp/, stm32_program.ld: SwissMicros DMCP5 SDK, BSD 3-Clause (LICENSE.DMCP5_SDK), released "NOMAS".
+  - src/sercon_ifc.h: the names and values of SwissMicros' preliminary DMCP5 Serial Console API (IFC 3.18).
+  - src/fonts.h: made by tools/mkfont.py from the X11 "misc-fixed" bitmap fonts 5x8, 8x13 and 10x20
+    (public domain).
+  - tools/dm42view.py, tools/dm42port.py, tools/pg5tool.py, test/sim: from Chess 47 and NAV47 (same author, GPL v3).
+
+Written with the help of AI (Claude by Anthropic). I reviewed and checked the results and take full responsibility
+for this project, its correctness and any mistakes in it.
+
+SwissMicros, DM42 and HP are trademarks of their owners. VT100 and VT102 are trademarks of their owners. This
+project is not affiliated with or endorsed by them.
